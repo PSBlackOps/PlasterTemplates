@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<plasterManifest schemaVersion="1.1" templateType="Project" 
+    xmlns="http://www.microsoft.com/schemas/PowerShell/Plaster/v1">
+    <metadata>
+        <name>CEModuleManifest</name>
+        <id>c2b1a700-2bb5-468a-92f3-aeca80fd50c6</id>
+        <version>0.0.1</version>
+        <title>CE Module Manifest</title>
+        <description></description>
+        <author>John Bruckler</author>
+        <tags></tags>
+    </metadata>
+    <parameters>
+        <!-- Basic module information -->
+        <parameter name="ModuleName" type="text" prompt="Name of module" />
+        <parameter name="ModuleDesc" type="text" prompt="Brief module description" />
+        <parameter name="ModuleVersion" type="text" prompt="Version number" default='0.0.1' />
+        <parameter name="ModuleAuthor" type="user-fullname" prompt="Author"/>
+        <parameter name="ModuleCompanyName" type="text" prompt="Company name" default='N/A' />
+        <parameter name="ModuleEmail" type="user-email" prompt="Email" default="project@email.com"/>
+
+        <!-- Lowest PS version supported -->
+        <parameter name="ModulePowerShellVersion" type="choice" store="text" prompt="Minimum PowerShell version" default="1">
+            <choice label="&amp;4.0" help="Minimum PowerShell Version required is 4.0 (Legacy)" value="4.0" />
+            <choice label="&amp;5.1" help="Minimum PowerShell Version required is 5.1" value="5.1" />
+            <choice label="&amp;6.0" help="Minimum PowerShell Version required is 6.0 (PowerShell Core/.Net Standard 2.x Compliant)" value="6.0" />
+        </parameter>
+
+        <!-- Include about_module help file? -->
+        <parameter name="ModuleAboutHelp" type="choice" prompt="Create a en-US folder for about_help_subject.txt files?" default='0'>
+            <choice label="&amp;Yes" help="Creates an en-US folder within the module root" value="Yes" />
+            <choice label="&amp;No" help="Does not create an en-US folder within the module root" value="No" />
+        </parameter>
+        
+        <!-- Configure VSCode? -->
+        <parameter name='Editor' type='choice' prompt='Use Visual Studio Code as the project editor?' default='0'>
+           <choice label='&amp;Yes' help='VS Code is your editor' value='Yes' />
+           <choice label='&amp;No' help='VSCode is not your editor' value='No' />
+        </parameter>
+
+        <!-- Module folder setup -->
+        <parameter name="FunctionFolders" type="multichoice" prompt="Please select folders to include" default='0,1,2'>
+            <choice label="&amp;Public" help="Adds a public folder to module root" value="Public" />
+            <choice label="P&amp;rivate" help="Adds a internal folder to module root" value="Private" />
+            <choice label="&amp;Classes" help="Adds a classes folder to module root" value="Classes" />
+            <choice label="&amp;Binaries" help="Adds a binaries folder to module root" value="Binaries" />
+            <choice label="&amp;Data" help="Adds a data folder to module root" value="Data" />
+            <choice label="C&amp;onfig" help="Adds a config folder for module config files." value="Config" />
+        </parameter>
+
+        <!-- Add pester? You really should, you know... -->
+        <parameter name="Pester" type="choice" prompt="Include Pester Tests?" default='0'>
+            <choice label="&amp;Yes" help="Adds a pester folder" value="Yes" />
+            <choice label="&amp;No" help="Does not add a pester folder" value="No" />
+        </parameter>
+
+        <!-- Use platyPS for documentation? -->
+        <parameter name="platyPS" type="choice" prompt="Use platyPS for documentation?" default='0'>
+            <choice label="&amp;Yes" help="Creates Docs and en-US folders for use with platyPS and markdown help files." value="Yes" />
+            <choice label="&amp;No" help="Skips creating platyPS folders." value="No" />
+        </parameter>
+
+        <!-- Use PSScriptAnalyzer? -->
+        <parameter name='PSScriptAnalyzer' type='choice' prompt='Use PSScriptAnalyzer for verification of well-formed scripts?' default='0'>
+           <choice label='&amp;Yes' help='Configure PSScriptAnalyzer for this module' value='Yes' />
+           <choice label='&amp;No' help='Do not use PSScriptAnalyzer, like a barbarian.' value='No' />
+        </parameter>
+
+        <!-- Use psake for builds? -->
+        <parameter name="Build" type="choice" prompt="Include PSake build files?" default='0'>
+            <choice label="&amp;Yes" help="Adds psdeploy files and creates build directory" value="Yes" />
+            <choice label="&amp;No" help="Does not add psdeploy files or create build directory" value="No" />
+        </parameter>
+    </parameters>
+    <content>
+        <message>&#10;&#10;Scaffolding your PowerShell Module, please stay awesome...&#10;&#10;&#10;</message>
+        <!-- Create PSM1 and PSD1 files -->
+        <newModuleManifest  destination='$PLASTER_PARAM_ModuleName\${PLASTER_PARAM_ModuleName}.psd1' 
+                            moduleVersion='$PLASTER_PARAM_ModuleVersion' 
+                            rootModule='${PLASTER_PARAM_ModuleName}.psm1' 
+                            author='$PLASTER_PARAM_ModuleAuthor'
+                            description='$PLASTER_PARAM_ModuleDesc'
+                            companyName='$PLASTER_PARAM_ModuleCompanyName'
+                            powerShellVersion='$PLASTER_PARAM_ModulePowerShellVersion'/>
+        <templateFile source='template.psm1' destination='$PLASTER_PARAM_ModuleName\${PLASTER_PARAM_ModuleName}.psm1'/>
+
+        <!-- Create module folders based on choices above -->
+        <message>Creating folders for module: $PLASTER_PARAM_ModuleName </message>
+        <file destination='$PLASTER_PARAM_ModuleName' source='' />
+        <file condition='$PLASTER_PARAM_FunctionFolders -contains "Public"' destination='$PLASTER_PARAM_ModuleName\Public\' source='' />
+        <file condition='$PLASTER_PARAM_FunctionFolders -contains "Private"' destination='$PLASTER_PARAM_ModuleName\Private\' source='' />
+        <file condition='$PLASTER_PARAM_FunctionFolders -contains "Classes"' destination='$PLASTER_PARAM_ModuleName\Classes\' source='' />
+        <file condition='$PLASTER_PARAM_FunctionFolders -contains "Binaries"' destination='$PLASTER_PARAM_ModuleName\Binaries\' source='' />
+        <file condition='$PLASTER_PARAM_FunctionFolders -contains "Data"' destination='$PLASTER_PARAM_ModuleName\Data\' source='' />  
+        <file condition='$PLASTER_PARAM_FunctionFolders -contains "Config"' destination='$PLASTER_PARAM_ModuleName\Config\' source='' />  
+          
+        <!-- About help -->
+        <file condition='$PLASTER_PARAM_ModuleAboutHelp -eq "Yes"' destination='${PLASTER_PARAM_ModuleName}\en-US\' source='' />
+        <templateFile condition='$PLASTER_PARAM_ModuleAboutHelp -eq "Yes"'  destination='${PLASTER_PARAM_ModuleName}\en-US\about_${PLASTER_PARAM_ModuleName}.help.txt' source='about_template.help.txt.ps1' />
+
+        <!-- Configure editor, if selected -->
+        <message condition='$PLASTER_PARAM_Editor -eq "Yes"'>Adding VSCode setttings...</message>
+        <file condition='$PLASTER_PARAM_Editor -eq "Yes"' destination='.vscode' source='' />
+        <templateFile condition='$PLASTER_PARAM_Editor -eq "Yes"' source='editor\VSCode\settings.json' destination='.vscode\settings.json' />
+                
+        <!-- Create Pester files & folders -->
+        <message condition="$PLASTER_PARAM_Pester -eq 'Yes'">Creating Tests folder...</message>
+        <file condition="$PLASTER_PARAM_Pester -eq 'Yes'" destination='Tests\' source='' />
+        <templateFile condition="$PLASTER_PARAM_Pester -eq 'Yes'" destination='Tests\${PLASTER_PARAM_ModuleName}.tests.ps1' source='pester\template.tests.ps1' />
+
+        <!-- Create PlatyPS folder -->
+        <message condition="$PLASTER_PARAM_platyps -eq 'Yes'">Creating Docs folder for platyPS source files...</message>
+        <file condition='$PLASTER_PARAM_platyps -eq "Yes"' destination='${PLASTER_PARAM_ModuleName}\en-US\' source='' />
+        <file condition="$PLASTER_PARAM_platyps -eq 'Yes'" destination='Docs\' source='' />
+                
+        <!-- PSScript Analyzer -->
+        <message condition="$PLASTER_PARAM_PSScriptAnalyzer -eq 'Yes'">Adding PSScriptAnalyzer settings file...</message>
+        <file condition="$PLASTER_PARAM_PSScriptAnalyzer -eq 'Yes'" destination="PSScriptAnalyzerSettings.psd1" source="psscriptanalyzer\PSScriptAnalyzerSettings.psd1" openInEditor="true" />
+        
+        <!-- Create PSake files & folders -->
+        <message condition="$PLASTER_PARAM_Build -eq 'Yes'">Creating PSake files and folders...</message>
+        <file condition="$PLASTER_PARAM_Build -eq 'Yes'" destination='Deploy\' source='' />
+        <file condition="$PLASTER_PARAM_Build -eq 'Yes'" destination='Deploy\build.ps1' source='psake\buildtemplate.ps1' />
+        <templateFile condition="$PLASTER_PARAM_Build -eq 'Yes'" destination='PsakeBuild.ps1' source='psake\psakeBuildTemplate.ps1' />
+        <templateFile condition="$PLASTER_PARAM_Build -eq 'Yes'" destination='$PLASTER_PARAM_ModuleName.psdeploy.ps1' source='psake\template.psdeploy.ps1' />
+
+        <!-- Required module verification -->
+        <message>Verifying required modules...</message>
+        <message condition="$PLASTER_PARAM_Pester -eq 'Yes'"> Verifying a minimum version of Pester (4.0.3) is installed. </message>
+        <requireModule name="Pester" condition="$PLASTER_PARAM_Pester -eq 'Yes'" minimumVersion="4.0.3"
+                message="Without Pester, you will not be able to run the provided Pester test to validate your module manifest file.`nWithout version 3.4.0, VS Code will not display Pester warnings and errors in the Problems panel." />
+        
+        <message condition="$PLASTER_PARAM_Build -eq 'Yes'"> Verifying a minimum version of PSake (4.7.0) is installed.</message>
+        <requireModule name='psake' condition="$PLASTER_PARAM_Build -eq 'Yes'" minimumVersion='4.7.0'
+                message='Without psake, you will not be able to use the build and deploy scripts to automate testing, script analysis, and module builds for release.' />
+        
+        <message condition="$PLASTER_PARAM_platyPS -eq 'Yes'"> Verifying a minimum version of platyPS (0.9.0) is installed.</message>
+        <requireModule name='platyPS' minimumVersion='0.9.0'
+                message='Without platyPS, you will not be able to write module help files in markdown.'/>
+        
+        <message condition="$PLASTER_PARAM_PSScriptAnalyzer -eq 'Yes'"> Verifying a minimum version of PSScriptAnalyzer (1.16.1) is installed.</message>
+        <requireModule name='PSScriptAnalyzer' condition="$PLASTER_PARAM_PSScriptAnalyzer -eq 'Yes'" minimumVersion='1.16.0'
+                message='PSScriptAnalyzer ensures sound PowerShell coding practices.' />
+
+    </content>
+</plasterManifest>
