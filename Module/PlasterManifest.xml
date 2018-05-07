@@ -120,7 +120,7 @@
         <!-- Create PSake files & folders -->
         <message condition="$PLASTER_PARAM_Build -eq 'Yes'">Creating PSake files and folders...</message>
         <file condition="$PLASTER_PARAM_Build -eq 'Yes'" destination='Deploy\' source='' />
-        <file condition="$PLASTER_PARAM_Build -eq 'Yes'" destination='Deploy\build.ps1' source='psake\buildtemplate.ps1' />
+        <file condition="$PLASTER_PARAM_Build -eq 'Yes'" destination='build.ps1' source='psake\buildtemplate.ps1' />
         <templateFile condition="$PLASTER_PARAM_Build -eq 'Yes'" destination='PsakeBuild.ps1' source='psake\psakeBuildTemplate.ps1' />
         <templateFile condition="$PLASTER_PARAM_Build -eq 'Yes'" destination='$PLASTER_PARAM_ModuleName.psdeploy.ps1' source='psake\template.psdeploy.ps1' />
 
