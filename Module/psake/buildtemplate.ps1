@@ -8,21 +8,43 @@ if (!(Get-Command Install-Module)) {
     throw 'PackageManagement is not installed. You need V5 or https://www.microsoft.com/en-us/download/details.aspx?id=51451'
 }
 
-# Install any missing modules needed for build/test
-if (!(Get-Module -Name Pester -ListAvailable)) {
-    Install-Module -Name Pester -Scope CurrentUser
-}
-if (!(Get-Module -Name psake -ListAvailable)) {
-    Install-Module -Name Psake -Scope CurrentUser
-}
-if (!(Get-Module -Name PSDeploy -ListAvailable)) {
-    Install-Module -Name PSDeploy -Scope CurrentUser
-}
-if (!(Get-Module -Name PSScriptAnalyzer -ListAvailable)) {
-    Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
-}
-if (!(Get-Module -Name platyPS -ListAvailable)) {
-    Install-Module -Name platyPS -Scope CurrentUser
+$Modules = @(
+    'Pester',
+    'Psake',
+    'PSDeploy',
+    'PSScriptAnalyzer',
+    'platyPS'
+)
+# Taken from Brandon Padgett's Resolve-Module
+if ((Get-PSRepository -Name PSGallery).InstallationPolicy -ne 'Trusted') { Set-PSRepository -Name PSGallery -InstallationPolicy Trusted }
+foreach ($Module in $Modules) {
+    $Installed = Get-Module -Name $Module -ListAvailable
+    Write-Verbose -Message ('Resolving module: {0}' -f $Module)
+
+    if ($Installed) {
+        $Version = $Installed | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
+        $GalleryVersion = Find-Module -Name $Module -Repository PSGallery | Measure-Object -Property Version -Maximum
+
+        if ($Version -lt $GalleryVersion) {
+            Write-Verbose -Message "$($Module) Installed Version [$($Version.tostring())] is outdated. Installing Gallery Version [$($GalleryVersion.tostring())]"
+
+            Install-Module -Name $Module -Force
+            Import-Module -Name $Module -Force -RequiredVersion $GalleryVersion
+        }
+        else {
+            Write-Verbose -Message ('{0} installed. Importing.' -f $Module)
+            Import-Module -Name $Module -Force -RequiredVersion $Version
+        }
+    }
+    else {
+        Write-Verbose -Message ('{0} missing. Installing.' -f $Module)
+        Install-Module -Name $Module -Force
+
+        $Installed = Get-Module -Name $Module -ListAvailable
+        $Version = $Installed | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
+        Import-Module -Name $Module -Force -RequiredVersion $Version
+    }
+
 }
 
 # Run our test
